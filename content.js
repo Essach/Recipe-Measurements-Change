@@ -1,29 +1,3 @@
-chrome.runtime.sendMessage("I am loading content script", (response) => {
-    // console.log(response);
-    // console.log("I am content script");
-});
-
-window.onload = (event) => {
-    // console.log("page is fully loaded");
-};
-
-// console.log("hi");
-// const item = document.getElementsByTagName("devsite-language-selector");
-// console.log(item);
-
-// console.log(text[182].innerText.includes("cups"));
-// console.log(text[182].innerText);
-// console.log();
-
-// for (let i = 0; i < text.length; i++) {
-//     console.log(text[i].innerText);
-// }
-
-// const listItem = text[182];
-// if (listItem != undefined) {
-//     listItem.innerText = "poopoocaca";
-// }
-
 const fractionsToNumbers = new Map();
 fractionsToNumbers.set("¼", 0.25);
 fractionsToNumbers.set("½", 0.5);
@@ -41,50 +15,60 @@ measurements.set("tbsp", [15, "ml"]);
 measurements.set("tablespoon", [15, "ml"]);
 measurements.set("tsp", [5, "ml"]);
 measurements.set("teaspoon", [5, "ml"]);
-measurements.set("cup", [240, "ml"]);
+measurements.set("cup", [240, "g/ml"]);
 
-// console.log(measurements.keys());
-// const iterator = measurements.keys();
-// console.log(iterator.next().value);
-// let currentVal = iterator.next().value;
-// while (currentVal !== undefined) {
-//     console.log(currentVal);
-//     currentVal = iterator.next().value;
-// }
+function isNumString(n) {
+    if (/^[+-]?\d+(\.\d+)?$/.test(n)) {
+        return true;
+    }
+    return false;
+}
 
 function changeMeasurement(listItem) {
-    const text = listItem.innerText;
+    let text = listItem.innerText;
 
     const iterator = measurements.keys();
 
     let currentVal = iterator.next().value;
     while (currentVal !== undefined) {
         if (text.includes(currentVal)) {
-            // console.log(text);
-            // console.log(text.indexOf(currentVal));
             const measurementUnit = measurements.get(currentVal)[1];
             const measurementUnitMultiplier = measurements.get(currentVal)[0];
             let sum = 0;
-            // console.log(currentVal, measurementUnit);
+
+            let startIndex = 0;
 
             const indexOfMeasurement = text.indexOf(currentVal);
+
+            let andDeleted = false;
+
+            if (text.substring(0, indexOfMeasurement).includes("and")) {
+                text = text.replace("and", "");
+                andDeleted = true;
+            }
+
             for (let i = indexOfMeasurement - 1; i >= 0; i--) {
-                // console.log(text[i]);
                 if (text[i] == " ") {
                 } else if (fractions.includes(text[i])) {
-                    // console.log(i, fractionsToNumbers.get(text[i]), "here");
                     sum =
                         sum +
                         measurementUnitMultiplier *
                             fractionsToNumbers.get(text[i]);
-                } else if (/^[+-]?\d+(\.\d+)?$/.test(text[i])) {
-                    const n = parseInt(text[i]);
-
-                    sum = sum + measurementUnitMultiplier * n;
-                    // console.log(i, n, "here2");
+                } else if (isNumString(text[i])) {
+                    let num = text[i];
+                    if (isNumString(text[i + 1])) {
+                    } else if (isNumString(text[i - 1])) {
+                        num = text[i - 1].concat(num);
+                        if (isNumString(text[i - 2])) {
+                            num = text[i - 2].concat(num);
+                        }
+                        const n = parseInt(num);
+                        sum = sum + measurementUnitMultiplier * n;
+                    } else {
+                        const n = parseInt(num);
+                        sum = sum + measurementUnitMultiplier * n;
+                    }
                 } else if (text[i] == "/") {
-                    // console.log(text[i - 1], text[i], text[i + 1]);
-                    // console.log(sum);
                     if (
                         /^[+-]?\d+(\.\d+)?$/.test(text[i + 1]) &&
                         /^[+-]?\d+(\.\d+)?$/.test(text[i - 1])
@@ -95,14 +79,44 @@ function changeMeasurement(listItem) {
                             measurementUnitMultiplier *
                                 (parseInt(text[i - 1]) / parseInt(text[i + 1]));
                     }
-                    break;
-                } else if (Number.isNaN(text[i])) {
+                    if (!andDeleted) {
+                        startIndex = i - 1;
+                        break;
+                    }
+                } else if (
+                    Number.isNaN(text[i]) ||
+                    text[i - 1] == undefined ||
+                    text[i] == "("
+                ) {
+                    startIndex = i + 1;
                     break;
                 }
             }
-            console.log(sum, measurementUnit);
-            // const measurementChanged = toString(sum) + " " + measurementUnit;
-            // console.log(measurementChanged);
+
+            const newText = String(sum).concat(" ", measurementUnit);
+
+            console.log(currentVal, newText);
+
+            let endIndex = 0;
+
+            let measurementWord = "";
+            for (let i = indexOfMeasurement; i < text.length; i++) {
+                measurementWord = measurementWord.concat(text[i]);
+                if (measurementWord == currentVal) {
+                    if (text[i + 1] == "s") {
+                        endIndex = i + 1;
+                    } else {
+                        endIndex = i;
+                    }
+                }
+            }
+
+            const textToReplace = text.substring(startIndex, endIndex + 1);
+            const newInnerText = text.replace(textToReplace, newText);
+
+            if (sum > 0) {
+                // listItem.innerText = newInnerText;
+            }
         }
         currentVal = iterator.next().value;
     }
@@ -112,16 +126,4 @@ const listItems = document.getElementsByTagName("li");
 for (let i = 0; i < listItems.length; i++) {
     const listItem = listItems[i];
     changeMeasurement(listItem);
-    // const text = listItem.innerText;
-
-    // const iterator = measurements.keys();
-
-    // let currentVal = iterator.next().value;
-    // while (currentVal !== undefined) {
-    //     if (text.includes(currentVal)) {
-    //         console.log(text);
-    //         console.log(text.indexOf(currentVal));
-    //     }
-    //     currentVal = iterator.next().value;
-    // }
 }
