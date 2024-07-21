@@ -38,41 +38,52 @@ function changeMeasurement(listItem) {
 
             let startIndex = 0;
 
-            const indexOfMeasurement = text.indexOf(currentVal);
+            let indexOfMeasurement = text.indexOf(currentVal);
 
             let andDeleted = false;
 
             if (text.substring(0, indexOfMeasurement).includes("and")) {
                 text = text.replace("and", "");
                 andDeleted = true;
+                console.log(text);
+                indexOfMeasurement = text.indexOf(currentVal);
             }
 
             for (let i = indexOfMeasurement - 1; i >= 0; i--) {
                 if (text[i] == " ") {
+                    console.log("here1");
                 } else if (fractions.includes(text[i])) {
                     sum =
                         sum +
                         measurementUnitMultiplier *
                             fractionsToNumbers.get(text[i]);
+                    console.log("here2");
                 } else if (isNumString(text[i])) {
+                    console.log("here3");
                     let num = text[i];
                     if (isNumString(text[i + 1])) {
+                        console.log("here4");
                     } else if (isNumString(text[i - 1])) {
+                        console.log("here5");
                         num = text[i - 1].concat(num);
                         if (isNumString(text[i - 2])) {
+                            console.log("here6");
                             num = text[i - 2].concat(num);
                         }
                         const n = parseInt(num);
                         sum = sum + measurementUnitMultiplier * n;
                     } else {
+                        console.log("here7");
                         const n = parseInt(num);
                         sum = sum + measurementUnitMultiplier * n;
                     }
                 } else if (text[i] == "/") {
+                    console.log("here8");
                     if (
                         /^[+-]?\d+(\.\d+)?$/.test(text[i + 1]) &&
                         /^[+-]?\d+(\.\d+)?$/.test(text[i - 1])
                     ) {
+                        console.log("here9");
                         sum = sum - measurementUnitMultiplier * text[i + 1];
                         sum =
                             sum +
@@ -80,22 +91,24 @@ function changeMeasurement(listItem) {
                                 (parseInt(text[i - 1]) / parseInt(text[i + 1]));
                     }
                     if (!andDeleted) {
+                        console.log("here10");
                         startIndex = i - 1;
                         break;
+                    } else {
+                        sum = sum - measurementUnitMultiplier * text[i - 1];
                     }
                 } else if (
                     Number.isNaN(text[i]) ||
                     text[i - 1] == undefined ||
                     text[i] == "("
                 ) {
+                    console.log("here11");
                     startIndex = i + 1;
                     break;
                 }
             }
 
             const newText = String(sum).concat(" ", measurementUnit);
-
-            console.log(currentVal, newText);
 
             let endIndex = 0;
 
@@ -115,7 +128,7 @@ function changeMeasurement(listItem) {
             const newInnerText = text.replace(textToReplace, newText);
 
             if (sum > 0) {
-                // listItem.innerText = newInnerText;
+                listItem.innerText = newInnerText;
             }
         }
         currentVal = iterator.next().value;
