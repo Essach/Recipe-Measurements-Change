@@ -1,11 +1,11 @@
-async function sayHello() {
+async function handleClick() {
     let [tab] = await chrome.tabs.query({ active: true });
     chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: change,
     });
 }
-document.getElementById("myButton").addEventListener("click", sayHello);
+document.getElementById("myButton").addEventListener("click", handleClick);
 
 function change() {
     const fractionsToNumbers = new Map();
