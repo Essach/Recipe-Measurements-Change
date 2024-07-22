@@ -4,10 +4,49 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Extension Title</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                background-color: whitesmoke;
+                border-radius: 15px;
+                border: none;
+                width: 20rem;
+            }
+            div {
+                padding: 1rem;
+                margin: 0;
+                background-color: whitesmoke;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+            h1 {
+                text-align: center;
+                color: #232323;
+            }
+            button {
+                padding: 5px 10px;
+                background-color: #232323;
+                border-radius: 15px;
+                color: white;
+                transition: all 0.1s ease-in;
+                font-size: 0.9rem;
+                font-weight: 550;
+            }
+            button:hover {
+                background-color: whitesmoke;
+                color: #232323;
+                cursor: pointer;
+            }
+        </style>
     </head>
     <body>
-        <h1>Hello!</h1>
-        <button id="myButton">Click me</button>
+        <div>
+            <h1>Recipe Measurements Change</h1>
+            <button id="myButton">Change Measurements</button>
+        </div>
         <script src="index.js"></script>
     </body>
 </html>
